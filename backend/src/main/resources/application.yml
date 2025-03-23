@@ -1,0 +1,55 @@
+# Logging configuration
+#logging:
+#  level:
+#    root: INFO
+#    org.hibernate.sql: DEBUG
+#    org.example.backend: INFO  # Assuming this was incomplete in the original
+
+# Spring configuration
+spring:
+  profiles:
+    active: dev
+  application:
+    name: airbnb-clone-backend
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    url: jdbc:postgresql://${POSTGRES_URL}:5432/${POSTGRES_DB}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    hikari:
+      poolName: Hikari
+      auto-commit: false
+  data:
+    jpa:
+      repositories:
+        bootstrap-mode: deferred
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: airbnb  # Consistent with Liquibase
+  liquibase:
+    contexts: dev
+    change-log: classpath:db/changelog/master.xml
+    default-schema: airbnb
+    enabled: true
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+# Server configuration
+server:
+  port: 8080
+
+# Auth0 configuration (renamed from okta for clarity)
+#auth0:
+#  oauth2:
+#    issuer: https://airbnb-clone.us.auth0.com/
+#    client-id: ${AUTH0_CLIENT_ID}  # Placeholder; set in environment
+#    client-secret: ${AUTH0_CLIENT_SECRET}  # Placeholder; set in environment
+#  application:
+#    role-landlord-id: rol_v1CpFU8josLg8YjC
