@@ -8,7 +8,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @Configuration
 // Marks this class as a configuration class for Spring Boot.
 @EnableJpaRepositories({"org.example.backend.user.repository",
-        "org.example.backend.listing.repository"
+        "org.example.backend.listing.repository",
+        "org.example.backend.booking.repository"
 })
 // Enables Spring Data JPA repositories in the specified package, allowing Spring to scan and manage JPA repository interfaces.
 @EnableTransactionManagement
