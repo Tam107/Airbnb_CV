@@ -26,6 +26,11 @@ public class ListingPicture extends AbstractAuditingEntity<Long> {
     @Column(name = "file_content_type")
     private String fileContentType;
 
+
+    /*In a real estate application, a property might have multiple photos,
+     but one is the "cover" image shown in listings
+For user profiles, it could mark the main profile picture from a gallery of images
+In a product catalog, it would identify which image is the main/primary product image*/
     @Column(name = "is_cover")
     private boolean isCover;
 

@@ -47,7 +47,10 @@ public class Listing extends AbstractAuditingEntity<Long> {
     private BookingCategory bookingCategory;
 
     @Column(name = "location")
-   private String location;
+    private String location;
+
+    @Column(name = "landlord_public_id")
+    private UUID landlordPublicId;
 
     @OneToMany(mappedBy = "listing", cascade = CascadeType.REMOVE)
     private Set<ListingPicture> pictures = new HashSet<>();
