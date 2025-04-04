@@ -29,39 +29,57 @@ public class Auth0Service {
     private String domain;
 
     @Value("${auth0.application.role-landlord-id}")
-    private String roleLandlordId;
+    private String roleLandLordId;
 
-    public void addLandLordRoleToUser(ReadUserDTO readUserDTO) {
+    /**
+     * Adds the landlord role to a user if they don't already have it
+     * @param readUserDTO the user information
+     * */
+    public void addLandLordRoleToUser(ReadUserDTO readUserDTO){
+        // check if user already has the landlord role
         if (readUserDTO.authorities().stream().noneMatch(
-                role -> role.equals(SecurityUtils.ROLE_LANDLORD))) {
-            try {
+                role -> role.equals(SecurityUtils.ROLE_LANDLORD)
+        )){
+            try{
                 String accessToken = this.getAccessToken();
-                assignRoleById(accessToken, readUserDTO.email(), readUserDTO.publicId(), roleLandlordId);
 
-            } catch (Auth0Exception e) {
-                throw new UserException(String.format("Not possible to be assign %s to %s", roleLandlordId, readUserDTO.publicId()));
+                // assign landlord role to the user
+                assignRoleById(accessToken, readUserDTO.email(), readUserDTO.publicId(), roleLandLordId);
+
+            }catch (Auth0Exception e){
+                throw new UserException(String.format("Not possible to be assigned %s to %s", roleLandLordId, readUserDTO.publicId() ));
             }
         }
-
-
     }
 
-    private void assignRoleById(String accessToken, String email,
-                                UUID publicId, String roleIdToAdd) throws Auth0Exception {
+    private void assignRoleById(String accessToken,
+                                String email,
+                                UUID publicId
+                                ,String roleIdToAdd) throws Auth0Exception{
+        // create Auth0 Management API client
         ManagementAPI mgmt = ManagementAPI.newBuilder(domain, accessToken).build();
+
+        // find user by email
+//      fieldsFilter filter the results received when calling an Auth0 endpoint
         Response<List<User>> auth0userByEmail = mgmt.users().listByEmail(email, new FieldsFilter()).execute();
+        // get the first user matching the email
         User user = auth0userByEmail.getBody()
                 .stream().findFirst()
-                .orElseThrow(() ->
+                .orElseThrow(()->
                         new UserException(String.format("Cannot find user with publicId %s", publicId)));
+        // Assign the role to the user
         mgmt.roles().assignUsers(roleIdToAdd, List.of(user.getId())).execute();
     }
 
-    private String getAccessToken() throws Auth0Exception {
-        AuthAPI authAPI = AuthAPI.newBuilder(clientId, clientSecret, domain).build();
-        TokenRequest tokenRequest = authAPI.requestToken(domain + "api/v2/");
+    private String getAccessToken() throws Auth0Exception{
+        // create Auth0 authentication API client
+        AuthAPI authAPI = AuthAPI.newBuilder(clientId, clientSecret,domain).build();
+        // request a token for management API
+        TokenRequest tokenRequest = authAPI.requestToken(domain+"api/v2/");
+        // Get token from the response
         TokenHolder holder = tokenRequest.execute().getBody();
         return holder.getAccessToken();
     }
+
 
 }
