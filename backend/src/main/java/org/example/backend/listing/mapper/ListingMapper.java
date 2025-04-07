@@ -1,6 +1,7 @@
 package org.example.backend.listing.mapper;
 
-import org.example.backend.listing.application.dto.CreateListingDTO;
+import org.example.backend.listing.application.dto.DisplayCardListingDTO;
+import org.example.backend.listing.application.dto.CreatedListingDTO;
 import org.example.backend.listing.application.dto.SaveListingDTO;
 import org.example.backend.listing.domain.Listing;
 import org.mapstruct.Mapper;
@@ -29,5 +30,11 @@ public interface ListingMapper {
     Listing saveListingDTOToListing(SaveListingDTO saveListingDTO);
 
     //return objects for backend
-    CreateListingDTO listingToCreatedListingDTO(Listing listing);
+    CreatedListingDTO listingToCreatedListingDTO(Listing listing);
+
+    @Mapping(target = "cover", source = "pictures")
+    List<DisplayCardListingDTO> listingToDisplayCardListingDTOs(List<Listing> listings);
+
+    @Mapping(target = "cover", source = "pictures", qualifiedByName = "extract-cover")
+    DisplayCardListingDTO listingToDisplayCardListingDTO(Listing listing);
 }

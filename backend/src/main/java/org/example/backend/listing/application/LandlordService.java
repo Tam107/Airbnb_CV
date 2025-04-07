@@ -1,7 +1,7 @@
 package org.example.backend.listing.application;
 
 import lombok.RequiredArgsConstructor;
-import org.example.backend.listing.application.dto.CreateListingDTO;
+import org.example.backend.listing.application.dto.CreatedListingDTO;
 import org.example.backend.listing.application.dto.SaveListingDTO;
 import org.example.backend.listing.domain.Listing;
 import org.example.backend.listing.mapper.ListingMapper;
@@ -26,7 +26,7 @@ public class LandlordService {
     private final Auth0Service auth0Service;
 
 
-    public CreateListingDTO create(SaveListingDTO saveListingDTO){
+    public CreatedListingDTO create(SaveListingDTO saveListingDTO){
         Listing newListing = listingMapper.saveListingDTOToListing(saveListingDTO);
 
         ReadUserDTO userConnected = userService.getAuthenticatedUserFromSecurityContext();
