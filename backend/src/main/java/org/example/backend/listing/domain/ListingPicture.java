@@ -4,14 +4,16 @@ import jakarta.persistence.*;
 import lombok.Data;
 import org.example.backend.sharekernel.domain.AbstractAuditingEntity;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 @Entity
 @Table(name = "listing_picture")
-@Data
 public class ListingPicture extends AbstractAuditingEntity<Long> {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "listingSequenceGenerator")
-    @SequenceGenerator(name = "listingSequenceGenerator", sequenceName = "listing_generator", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "listingPictureSequenceGenerator")
+    @SequenceGenerator(name = "listingPictureSequenceGenerator", sequenceName = "listing_picture_generator", allocationSize = 1)
     @Column(name = "id")
     private Long id;
 
@@ -20,17 +22,12 @@ public class ListingPicture extends AbstractAuditingEntity<Long> {
     private Listing listing;
 
     @Lob
-    @Column(name = "file",nullable = false)
+    @Column(name = "file", nullable = false)
     private byte[] file;
 
     @Column(name = "file_content_type")
     private String fileContentType;
 
-
-    /*In a real estate application, a property might have multiple photos,
-     but one is the "cover" image shown in listings
-For user profiles, it could mark the main profile picture from a gallery of images
-In a product catalog, it would identify which image is the main/primary product image*/
     @Column(name = "is_cover")
     private boolean isCover;
 
@@ -39,5 +36,61 @@ In a product catalog, it would identify which image is the main/primary product 
         return id;
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
 
+    public Listing getListing() {
+        return listing;
+    }
+
+    public void setListing(Listing listing) {
+        this.listing = listing;
+    }
+
+    public byte[] getFile() {
+        return file;
+    }
+
+    public void setFile(byte[] file) {
+        this.file = file;
+    }
+
+    public String getFileContentType() {
+        return fileContentType;
+    }
+
+    public void setFileContentType(String fileContentType) {
+        this.fileContentType = fileContentType;
+    }
+
+    public boolean isCover() {
+        return isCover;
+    }
+
+    public void setCover(boolean cover) {
+        isCover = cover;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ListingPicture that = (ListingPicture) o;
+        return isCover == that.isCover && Objects.deepEquals(file, that.file) && Objects.equals(fileContentType, that.fileContentType);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(Arrays.hashCode(file), fileContentType, isCover);
+    }
+
+    @Override
+    public String toString() {
+        return "ListingPicture{" +
+                "file=" + Arrays.toString(file) +
+                ", fileContentType='" + fileContentType + '\'' +
+                ", isCover=" + isCover +
+                '}';
+    }
 }

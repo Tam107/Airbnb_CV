@@ -6,6 +6,7 @@ import org.example.backend.user.application.dto.ReadUserDTO;
 import org.example.backend.user.domain.User;
 import org.example.backend.user.mapper.UserMapper;
 import org.example.backend.user.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
@@ -20,7 +21,6 @@ import java.util.UUID;
  * Service for managing user data and synchronizing with identity provider
  */
 @Service
-@RequiredArgsConstructor  // Creates constructor with required fields
 public class UserService {
 
     // Key used to check when a user was last updated in the identity provider
@@ -29,6 +29,12 @@ public class UserService {
     // Dependencies automatically injected by Spring via constructor
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+
+    @Autowired
+    public UserService(UserRepository userRepository, UserMapper userMapper) {
+        this.userRepository = userRepository;
+        this.userMapper = userMapper;
+    }
 
     /**
      * Gets the currently authenticated user from Spring Security context

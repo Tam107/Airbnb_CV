@@ -6,18 +6,25 @@ import org.example.backend.listing.domain.Listing;
 import org.example.backend.listing.domain.ListingPicture;
 import org.example.backend.listing.mapper.ListingPictureMapper;
 import org.example.backend.listing.repository.ListingPictureRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Set;
 
 @Service
-@RequiredArgsConstructor
+
 public class PictureService {
 
     private final ListingPictureRepository listingPictureRepository;
 
     private ListingPictureMapper listingPictureMapper;
+
+    @Autowired
+    public PictureService(ListingPictureRepository listingPictureRepository, ListingPictureMapper listingPictureMapper) {
+        this.listingPictureRepository = listingPictureRepository;
+        this.listingPictureMapper = listingPictureMapper;
+    }
 
 
     /**

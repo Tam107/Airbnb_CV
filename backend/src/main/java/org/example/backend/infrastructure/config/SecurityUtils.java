@@ -5,19 +5,12 @@ import org.example.backend.user.domain.User;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-/*
-This class is part of a Spring Security setup and helps to bridge the gap between the authentication mechanism
-(e.g., OAuth2 with JWT) and the application's domain-specific user and role model.
-this extract JWT from user for specific role
-*/
 
 public class SecurityUtils {
 
@@ -28,7 +21,6 @@ public class SecurityUtils {
 
     public static final String CLAIMS_ROLE = "role";
 
-    /*converts the attributes received from an OAuth2 provider into a domain-specific User object*/
     public static User mapOauth2AttributesToUser(Map<String, Object> oauth2Attributes) {
         User user = new User();
         String sub = String.valueOf(oauth2Attributes.get("sub"));
@@ -59,8 +51,17 @@ public class SecurityUtils {
             user.setImageUrl(((String) oauth2Attributes.get("picture")));
         }
 
-        if (oauth2Attributes.get(CLAIMS_NAMESPACE) != null){
-            List<String> authoritiesRaw = (List<String>) oauth2Attributes.get(CLAIMS_NAMESPACE);
+        if (oauth2Attributes.get(CLAIMS_NAMESPACE) != null) {
+            Object authoritiesObj = oauth2Attributes.get(CLAIMS_NAMESPACE);
+            List<String> authoritiesRaw;
+            if (authoritiesObj instanceof List<?> authoritiesList) {
+                authoritiesRaw = authoritiesList.stream()
+                        .filter(String.class::isInstance)
+                        .map(String.class::cast)
+                        .collect(Collectors.toList());
+            } else {
+                authoritiesRaw = Collections.emptyList();
+            }
             Set<Authority> authorities = authoritiesRaw.stream()
                     .map(authority -> {
                         Authority auth = new Authority();
@@ -73,20 +74,29 @@ public class SecurityUtils {
         return user;
     }
 
-    public static List<SimpleGrantedAuthority> extractAuthorityFromClaims(Map<String, Object> claims){
+    public static List<SimpleGrantedAuthority> extractAuthorityFromClaims(Map<String, Object> claims) {
         return mapRolesToGrantedAuthorites(getRolesFromClaims(claims));
     }
 
-    private static Collection<String> getRolesFromClaims(Map<String, Object> claims){
-        return (List<String>) claims.get(CLAIMS_NAMESPACE);
+    private static Collection<String> getRolesFromClaims(Map<String, Object> claims) {
+        Object rolesObj = claims.get(CLAIMS_NAMESPACE);
+        if (rolesObj instanceof List<?> rolesList) {
+            return rolesList.stream()
+                    .filter(String.class::isInstance)
+                    .map(String.class::cast)
+                    .collect(Collectors.toList());
+        }
+        return Collections.emptyList();
     }
 
-    private static List<SimpleGrantedAuthority> mapRolesToGrantedAuthorites(Collection<String> roles){
-        return roles.stream().filter(role -> role.startsWith("ROLE_"))
-                .map(SimpleGrantedAuthority::new).toList();
+    private static List<SimpleGrantedAuthority> mapRolesToGrantedAuthorites(Collection<String> roles) {
+        return roles.stream()
+                .filter(role -> role.startsWith("ROLE_"))
+                .map(SimpleGrantedAuthority::new)
+                .toList();
     }
 
-    public static boolean hasCurrentUserAnyOfAuthorities(String ...authorities){
+    public static boolean hasCurrentUserAnyOfAuthorities(String... authorities) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return (authentication != null && getAuthorities(authentication)
                 .anyMatch(authority -> Arrays.asList(authorities).contains(authority)));
@@ -95,11 +105,8 @@ public class SecurityUtils {
     private static Stream<String> getAuthorities(Authentication authentication) {
         Collection<? extends GrantedAuthority> authorities = authentication
                 instanceof JwtAuthenticationToken jwtAuthenticationToken ?
-                extractAuthorityFromClaims(jwtAuthenticationToken.
-                        getToken().getClaims()) : authentication.getAuthorities();
+                extractAuthorityFromClaims(jwtAuthenticationToken.getToken().getClaims()) :
+                authentication.getAuthorities();
         return authorities.stream().map(GrantedAuthority::getAuthority);
-
     }
-
-
 }

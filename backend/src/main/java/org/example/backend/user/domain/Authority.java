@@ -13,14 +13,21 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "authority")
-@Data
 public class Authority implements Serializable {
 
-    @Id
-    @Size(max = 50)
     @NotNull
+    @Size(max=50)
+    @Id
     @Column(length = 50)
     private String name;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -35,5 +42,10 @@ public class Authority implements Serializable {
         return Objects.hashCode(name);
     }
 
-
+    @Override
+    public String toString() {
+        return "Authority{" +
+                "name='" + name + '\'' +
+                '}';
+    }
 }

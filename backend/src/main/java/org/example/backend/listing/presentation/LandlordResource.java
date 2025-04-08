@@ -10,6 +10,7 @@ import org.example.backend.listing.application.dto.SaveListingDTO;
 import org.example.backend.listing.application.dto.sub.PictureDTO;
 import org.example.backend.user.application.UserException;
 import org.example.backend.user.application.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -27,13 +28,19 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/landlord-listing")
-@RequiredArgsConstructor
 public class LandlordResource {
 
     private final LandlordService landlordService;
 
     private final Validator validator;
     private final UserService userService;
+
+    @Autowired
+    public LandlordResource(LandlordService landlordService, Validator validator, UserService userService) {
+        this.landlordService = landlordService;
+        this.validator = validator;
+        this.userService = userService;
+    }
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
