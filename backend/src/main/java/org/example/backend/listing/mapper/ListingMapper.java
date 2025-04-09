@@ -37,7 +37,9 @@ public interface ListingMapper {
     @Mapping(target = "cover", source = "pictures", qualifiedByName = "extract-cover")
     DisplayCardListingDTO listingToDisplayCardListingDTO(Listing listing);
 
+
+    // Custom mapping: Converts int price to PriceVO for Listing entity
     default PriceVO mapPriceToPriceVO(int price) {
-        return new PriceVO(price);
+        return new PriceVO(price); // Wraps int into PriceVO object
     }
 }

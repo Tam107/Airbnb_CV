@@ -7,6 +7,7 @@ import org.example.backend.listing.application.dto.SaveListingDTO;
 import org.example.backend.listing.domain.Listing;
 import org.example.backend.listing.mapper.ListingMapper;
 import org.example.backend.listing.repository.ListingRepository;
+import org.example.backend.sharekernel.service.State;
 import org.example.backend.user.application.UserService;
 import org.example.backend.user.application.dto.Auth0Service;
 import org.example.backend.user.application.dto.ReadUserDTO;
@@ -15,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
+
 
 @Service
 public class LandlordService {
@@ -55,11 +58,29 @@ public class LandlordService {
         return listingMapper.listingToCreatedListingDTO(savedListing);
     }
 
-    @Transactional( readOnly = true)
+    @Transactional(readOnly = true)
     public List<DisplayCardListingDTO> getAllProperties(ReadUserDTO landlord){
         List<Listing> properties = listingRepository.findAllByLandlordPublicIdFetchCoverPicture(landlord.publicId());
 
         return listingMapper.listingToDisplayCardListingDTOs(properties);
+    }
+
+    /**
+     * ReadUserDTO
+     *         UUID publicId,
+     *         String firstName,
+     *         String lastName,
+     *         String email,
+     *         String imageUrl,
+     *         Set<String> authorities*/
+    @Transactional
+    public State<UUID, String> delete(UUID publicId, ReadUserDTO landlord){
+        long deletedSuccessully = listingRepository.deleteByPublicIdAndLandlordPublicId(publicId, landlord.publicId());
+        if (deletedSuccessully > 0){
+            return State.<UUID, String>builder().forSuccess(publicId);
+        }
+
+        return State.<UUID,String>builder().forUnauthorized("User not authorized to delete this listing");
     }
 
 
