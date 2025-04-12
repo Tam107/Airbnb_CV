@@ -41,6 +41,19 @@ spring:
       max-file-size: 100MB
       max-request-size: 100MB
 
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+  openapi:
+    service:
+      api-docs: airbnb-clone-backend
+      title: Airbnb Clone Backend API
+      version: 1.0.0
+    server: http://localhost:${server.port}
+
 # Server configuration
 server:
   port: 8080
