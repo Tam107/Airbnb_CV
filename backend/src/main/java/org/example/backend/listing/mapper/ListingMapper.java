@@ -42,4 +42,16 @@ public interface ListingMapper {
     default PriceVO mapPriceToPriceVO(int price) {
         return new PriceVO(price); // Wraps int into PriceVO object
     }
+
+    @Mapping(target = "landlord", ignore = true)
+    @Mapping(target = "description.title.value", source = "title")
+    @Mapping(target = "description.description.value", source = "description")
+    @Mapping(target = "infos.bedrooms.value", source = "bedrooms")
+    @Mapping(target = "infos.guests.value", source = "guests")
+    @Mapping(target = "infos.beds.value", source = "beds")
+    @Mapping(target = "infos.baths.value", source = "bathrooms")
+    @Mapping(target = "category", source = "category")
+    @Mapping(target = "location", source = "location")
+    @Mapping(target = "price.value", source = "price")
+    DisplayListingDTO listingToDisplayListingDTO(Listing listing);
 }

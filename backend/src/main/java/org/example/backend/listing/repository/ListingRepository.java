@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface ListingRepository extends JpaRepository<Listing, Long> {
@@ -31,4 +32,6 @@ public interface ListingRepository extends JpaRepository<Listing, Long> {
 
     // Fetches all listings with cover pics only, paginated for general listing feed (e.g., homepage)
     Page<Listing> findAllWithCoverOnly(Pageable pageable);
+
+    Optional<Listing> findByPublicId(UUID publicId);
 }
