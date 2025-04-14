@@ -31,6 +31,8 @@ public interface ListingRepository extends JpaRepository<Listing, Long> {
     Page<Listing> finaAllByBookingCategoryWithCoverOnly(Pageable pageable, BookingCategory bookingCategory);
 
     // Fetches all listings with cover pics only, paginated for general listing feed (e.g., homepage)
+    @Query("SELECT listing from Listing listing LEFT JOIN FETCH listing.pictures picture" +
+            " WHERE picture.isCover = true")
     Page<Listing> findAllWithCoverOnly(Pageable pageable);
 
     Optional<Listing> findByPublicId(UUID publicId);

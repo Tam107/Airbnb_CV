@@ -50,7 +50,7 @@ public interface ListingMapper {
     @Mapping(target = "infos.guests.value", source = "guests")
     @Mapping(target = "infos.beds.value", source = "beds")
     @Mapping(target = "infos.baths.value", source = "bathrooms")
-    @Mapping(target = "category", source = "category")
+    @Mapping(target = "category", source = "bookingCategory")
     @Mapping(target = "location", source = "location")
     @Mapping(target = "price.value", source = "price")
     DisplayListingDTO listingToDisplayListingDTO(Listing listing);

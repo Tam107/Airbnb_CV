@@ -27,7 +27,9 @@ public class SecurityConfiguration {
         requestHandler.setCsrfRequestAttributeName(null);
         http.authorizeHttpRequests(authorize -> authorize
                 .requestMatchers(HttpMethod.GET, "/api/tenant-listing/get-all-by-category").permitAll()
-                .anyRequest()
+                                .requestMatchers(HttpMethod.GET,"/api/tenant-listing/get-one").permitAll()
+                                .requestMatchers(HttpMethod.GET, "assests/*").permitAll()
+                                .anyRequest()
                 .authenticated()
                 // configure Cross-Site Request Forgery (CSRF) protection
         ).csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
