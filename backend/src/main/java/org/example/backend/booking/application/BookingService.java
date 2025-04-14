@@ -1,12 +1,16 @@
 package org.example.backend.booking.application;
 
 import org.example.backend.booking.application.dto.BookedDateDTO;
+import org.example.backend.booking.application.dto.BookedListingDTO;
 import org.example.backend.booking.application.dto.NewBookingDTO;
 import org.example.backend.booking.domain.Booking;
 import org.example.backend.booking.mapper.BookingMapper;
 import org.example.backend.booking.repository.BookingRepository;
 import org.example.backend.listing.application.LandlordService;
+import org.example.backend.listing.application.dto.DisplayCardListingDTO;
+import org.example.backend.listing.application.dto.DisplayListingDTO;
 import org.example.backend.listing.application.dto.ListingCreateBookingDTO;
+import org.example.backend.listing.application.dto.vo.PriceVO;
 import org.example.backend.sharekernel.service.State;
 import org.example.backend.user.application.UserService;
 import org.example.backend.user.application.dto.ReadUserDTO;
@@ -73,6 +77,33 @@ public class BookingService {
         return bookingRepository.findAllByFkListing(publicId)
                 .stream()
                 .map(bookingMapper::bookingToCheckAvailability).toList();
+    }
+
+    public List<BookedListingDTO> getBookedListing(){
+        ReadUserDTO connectedUser = userService.getAuthenticatedUserFromSecurityContext();
+
+        List<Booking> allBookings = bookingRepository.findAllByFkTenant(connectedUser.publicId());
+        List<UUID> allListingPublicIDs = allBookings.stream()
+                .map(Booking::getFkListing)
+                .toList();
+        List<DisplayCardListingDTO> allListings = landlordService.getCardDisplayByListingPublicId(allListingPublicIDs);
+        return mapBookingToBookedListingDTO(allBookings, allListings);
+    }
+
+    private List<BookedListingDTO> mapBookingToBookedListingDTO(List<Booking> allBookings, List<DisplayCardListingDTO> allListings) {
+        return allBookings.stream().map(booking -> {
+            DisplayCardListingDTO displayListingDTO = allListings.stream()
+                    .filter(listing -> listing.publicId().equals(booking.getFkListing()))
+                    .findFirst()
+                    .orElseThrow();
+
+            BookedDateDTO dates = bookingMapper.bookingToCheckAvailability(booking);
+            return new BookedListingDTO(displayListingDTO.cover(),
+                    displayListingDTO.location(),
+                    dates, new PriceVO(booking.getTotalPrice()),
+                    booking.getPublicId(), displayListingDTO.publicId());
+
+        }).toList();
     }
 
 }

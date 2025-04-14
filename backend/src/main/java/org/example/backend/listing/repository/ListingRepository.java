@@ -36,4 +36,8 @@ public interface ListingRepository extends JpaRepository<Listing, Long> {
     Page<Listing> findAllWithCoverOnly(Pageable pageable);
 
     Optional<Listing> findByPublicId(UUID publicId);
+
+    List<Listing> findAllByPublicIdIn(List<UUID> allListingPublicIDs);
+
+    Optional<Listing> findOneByPublicIdAndLandlordPublicId(UUID listingPublicId, UUID landlordPublicId);
 }

@@ -24,4 +24,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
      * Check Booking History
      * Availability Calculations*/
     List<Booking> findAllByFkListing(UUID fkListing);
+
+    List<Booking> findAllByFkTenant(UUID fkTenant);
 }
