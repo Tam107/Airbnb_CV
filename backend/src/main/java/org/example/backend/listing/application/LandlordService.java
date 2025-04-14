@@ -3,6 +3,7 @@ package org.example.backend.listing.application;
 import lombok.RequiredArgsConstructor;
 import org.example.backend.listing.application.dto.CreatedListingDTO;
 import org.example.backend.listing.application.dto.DisplayCardListingDTO;
+import org.example.backend.listing.application.dto.ListingCreateBookingDTO;
 import org.example.backend.listing.application.dto.SaveListingDTO;
 import org.example.backend.listing.domain.Listing;
 import org.example.backend.listing.mapper.ListingMapper;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 // chu nha
@@ -81,6 +83,11 @@ public class LandlordService {
         }
 
         return State.<UUID,String>builder().forUnauthorized("User not authorized to delete this listing");
+    }
+
+    public Optional<ListingCreateBookingDTO> getByListingPublicId(UUID publicId){
+
+        return listingRepository.findByPublicId(publicId).map(listingMapper::mapListingToListingCreateBookingDTO);
     }
 
 
