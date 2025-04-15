@@ -28,7 +28,8 @@ public class SecurityConfiguration {
         http.authorizeHttpRequests(authorize -> authorize
                 .requestMatchers(HttpMethod.GET, "/api/tenant-listing/get-all-by-category").permitAll()
                                 .requestMatchers(HttpMethod.GET,"/api/tenant-listing/get-one").permitAll()
-                                .requestMatchers(HttpMethod.GET, "assests/*").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/assests/*").permitAll()
+                                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                                 .anyRequest()
                 .authenticated()
                 // configure Cross-Site Request Forgery (CSRF) protection

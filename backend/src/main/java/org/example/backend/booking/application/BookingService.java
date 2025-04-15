@@ -125,6 +125,7 @@ public class BookingService {
     }
 
     // cancel booking for user
+    @Transactional(rollbackFor = Exception.class)
     public State<UUID, String> cancel(UUID bookingPublicId, UUID listingPublicId, boolean byLandlord) {
         // Get the currently authenticated user
         ReadUserDTO connectedUser = userService.getAuthenticatedUserFromSecurityContext();
@@ -133,7 +134,7 @@ public class BookingService {
         if (SecurityUtils.hasCurrentUserAnyOfAuthorities(SecurityUtils.ROLE_LANDLORD) && byLandlord) {
             deleteSuccess = handleDeletionForLandlord(bookingPublicId, listingPublicId, connectedUser, deleteSuccess);
         }else {
-            deleteSuccess =  bookingRepository.deleteBookingFkTenantAndPublicId(connectedUser.publicId(),bookingPublicId);
+            deleteSuccess =  bookingRepository.deleteBookingByFkTenantAndPublicId(connectedUser.publicId(),bookingPublicId);
         }
         if (deleteSuccess >=1){
             return State.<UUID, String>builder().forSuccess(bookingPublicId);
@@ -155,6 +156,16 @@ public class BookingService {
             deleteSuccess = bookingRepository.deleteBookingByPublicIdAndFkListing(bookingPublicId, listingVerificationOpt.get().publicId());
         }
         return deleteSuccess;
+
+    }
+
+    @Transactional(readOnly = true )
+    public List<BookedListingDTO> getBookedListingForLandlord(){
+        ReadUserDTO connectedUser = userService.getAuthenticatedUserFromSecurityContext();
+        List<DisplayCardListingDTO> allProperties =  landlordService.getAllProperties(connectedUser);
+        List<UUID> allPropertyByPublicIds = allProperties.stream().map(DisplayCardListingDTO::publicId).toList();
+        List<Booking> allBookings = bookingRepository.findAllByFkListing(connectedUser.publicId());
+        return mapBookingToBookedListingDTO(allBookings, allProperties);
 
     }
 

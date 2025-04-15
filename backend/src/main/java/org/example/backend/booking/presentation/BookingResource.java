@@ -5,12 +5,14 @@ import org.example.backend.booking.application.BookingService;
 import org.example.backend.booking.application.dto.BookedDateDTO;
 import org.example.backend.booking.application.dto.BookedListingDTO;
 import org.example.backend.booking.application.dto.NewBookingDTO;
+import org.example.backend.infrastructure.config.SecurityUtils;
 import org.example.backend.sharekernel.service.State;
 import org.example.backend.sharekernel.service.StatusNotification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -50,6 +52,7 @@ public class BookingResource {
         return ResponseEntity.ok(bookingService.getBookedListing());
     }
 
+    @DeleteMapping("cancel")
     public ResponseEntity<UUID> cancel(@RequestParam UUID bookingPublicId,
                                        @RequestParam UUID listingPublicId,
                                        @RequestParam boolean byLandlord){
@@ -59,6 +62,12 @@ public class BookingResource {
             return ResponseEntity.of(problemDetail).build();
         }
         return ResponseEntity.ok(bookingPublicId);
+    }
+
+    @GetMapping("get-booked-listing-for-landlord")
+    @PreAuthorize("hasAnyRole('"+ SecurityUtils.ROLE_LANDLORD+"')")
+    public ResponseEntity<List<BookedListingDTO>> getBookedListingForLandlord(){
+        return ResponseEntity.ok(bookingService.getBookedListingForLandlord());
     }
 
 }
