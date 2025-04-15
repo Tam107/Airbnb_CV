@@ -6,6 +6,7 @@ import org.example.backend.booking.application.dto.NewBookingDTO;
 import org.example.backend.booking.domain.Booking;
 import org.example.backend.booking.mapper.BookingMapper;
 import org.example.backend.booking.repository.BookingRepository;
+import org.example.backend.infrastructure.config.SecurityUtils;
 import org.example.backend.listing.application.LandlordService;
 import org.example.backend.listing.application.dto.DisplayCardListingDTO;
 import org.example.backend.listing.application.dto.DisplayListingDTO;
@@ -43,16 +44,16 @@ public class BookingService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public State<Void, String> create(NewBookingDTO newBookingDTO){
+    public State<Void, String> create(NewBookingDTO newBookingDTO) {
         Booking booking = bookingMapper.newBookingToBooking(newBookingDTO);
         Optional<ListingCreateBookingDTO> listingOpt = landlordService.getByListingPublicId(newBookingDTO.listingPublicId());
 
-        if (listingOpt.isEmpty()){
+        if (listingOpt.isEmpty()) {
             return State.<Void, String>builder().forError("Landlord public id is not found");
         }
         boolean alreadyBooked = bookingRepository.bookingExistsAtInterval(newBookingDTO.startDate(), newBookingDTO.endDate(), newBookingDTO.listingPublicId());
 
-        if (alreadyBooked){
+        if (alreadyBooked) {
             return State.<Void, String>builder().forError("This listing is already booked for the selected dates");
         }
 
@@ -65,7 +66,7 @@ public class BookingService {
         booking.setNumberOfTravelers(1);
 
         long numberOfNights = ChronoUnit.DAYS.between(newBookingDTO.startDate(), newBookingDTO.endDate());
-        booking.setTotalPrice( (int) (numberOfNights * listingCreateBookingDTO.price().value()));
+        booking.setTotalPrice((int) (numberOfNights * listingCreateBookingDTO.price().value()));
 
         bookingRepository.save(booking);
         return State.<Void, String>builder().forSuccess();
@@ -73,14 +74,14 @@ public class BookingService {
 
 
     @Transactional(readOnly = true)
-    public List<BookedDateDTO> checkAvailability(UUID publicId){
+    public List<BookedDateDTO> checkAvailability(UUID publicId) {
         return bookingRepository.findAllByFkListing(publicId)
                 .stream()
                 .map(bookingMapper::bookingToCheckAvailability).toList();
     }
 
     // Retrieves booked listings for the authenticated user
-    public List<BookedListingDTO> getBookedListing(){
+    public List<BookedListingDTO> getBookedListing() {
         // Get the currently authenticated user
         ReadUserDTO connectedUser = userService.getAuthenticatedUserFromSecurityContext();
 
@@ -121,6 +122,40 @@ public class BookingService {
                     displayListingDTO.publicId()
             );
         }).toList();
+    }
+
+    // cancel booking for user
+    public State<UUID, String> cancel(UUID bookingPublicId, UUID listingPublicId, boolean byLandlord) {
+        // Get the currently authenticated user
+        ReadUserDTO connectedUser = userService.getAuthenticatedUserFromSecurityContext();
+        int deleteSuccess = 0;
+
+        if (SecurityUtils.hasCurrentUserAnyOfAuthorities(SecurityUtils.ROLE_LANDLORD) && byLandlord) {
+            deleteSuccess = handleDeletionForLandlord(bookingPublicId, listingPublicId, connectedUser, deleteSuccess);
+        }else {
+            deleteSuccess =  bookingRepository.deleteBookingFkTenantAndPublicId(connectedUser.publicId(),bookingPublicId);
+        }
+        if (deleteSuccess >=1){
+            return State.<UUID, String>builder().forSuccess(bookingPublicId);
+        }
+        return State.<UUID, String>builder().forError("Booking not found");
+
+    }
+
+    /*
+    * The function ensures that:
+    The landlord attempting to delete the booking is authorized to do so (i.e., the listing belongs to the landlord).
+    The booking is deleted if the authorization check passes
+    * */
+    private int handleDeletionForLandlord(UUID bookingPublicId, UUID listingPublicId, ReadUserDTO connectedUser, int deleteSuccess) {
+        // Optional that may contain a DisplayCardListingDTO object if the listing exists and belongs to the landlord
+        Optional<DisplayCardListingDTO> listingVerificationOpt = landlordService
+                .getByPublicIdAndLandlordPublicId(listingPublicId, connectedUser.publicId());
+        if (listingVerificationOpt.isPresent()) {
+            deleteSuccess = bookingRepository.deleteBookingByPublicIdAndFkListing(bookingPublicId, listingVerificationOpt.get().publicId());
+        }
+        return deleteSuccess;
+
     }
 
 }
