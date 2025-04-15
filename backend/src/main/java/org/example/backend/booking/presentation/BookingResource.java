@@ -3,6 +3,7 @@ package org.example.backend.booking.presentation;
 import jakarta.validation.Valid;
 import org.example.backend.booking.application.BookingService;
 import org.example.backend.booking.application.dto.BookedDateDTO;
+import org.example.backend.booking.application.dto.BookedListingDTO;
 import org.example.backend.booking.application.dto.NewBookingDTO;
 import org.example.backend.sharekernel.service.State;
 import org.example.backend.sharekernel.service.StatusNotification;
@@ -42,6 +43,22 @@ public class BookingResource {
     @GetMapping("check-availability")
     public ResponseEntity<List<BookedDateDTO>> checkAvailability(@RequestParam UUID listingPublicId){
         return ResponseEntity.ok(bookingService.checkAvailability(listingPublicId));
+    }
+
+    @GetMapping("get-booked-listing")
+    public ResponseEntity<List<BookedListingDTO>> getBookedListing(){
+        return ResponseEntity.ok(bookingService.getBookedListing());
+    }
+
+    public ResponseEntity<UUID> cancel(@RequestParam UUID bookingPublicId,
+                                       @RequestParam UUID listingPublicId,
+                                       @RequestParam boolean byLandlord){
+        State<UUID, String> cancelState = bookingService.cancel(bookingPublicId, listingPublicId, byLandlord);
+        if (cancelState.getStatus().equals(StatusNotification.ERROR)){
+            ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, cancelState.getError());
+            return ResponseEntity.of(problemDetail).build();
+        }
+        return ResponseEntity.ok(bookingPublicId);
     }
 
 }
