@@ -1,8 +1,10 @@
 package org.example.backend.listing.presentation;
 
+import jakarta.validation.Valid;
 import org.example.backend.listing.application.TenantService;
 import org.example.backend.listing.application.dto.DisplayCardListingDTO;
 import org.example.backend.listing.application.dto.DisplayListingDTO;
+import org.example.backend.listing.application.dto.SearchDTO;
 import org.example.backend.listing.domain.BookingCategory;
 import org.example.backend.sharekernel.service.State;
 import org.example.backend.sharekernel.service.StatusNotification;
@@ -12,10 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
@@ -45,6 +44,11 @@ public class TenantResource {
         }
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, displayListingState.getError());
         return ResponseEntity.of(problemDetail).build();
+    }
+
+    public ResponseEntity<Page<DisplayCardListingDTO>> search(Pageable pageable,
+                                                              @Valid @RequestBody SearchDTO searchDTO){
+        return ResponseEntity.ok(tenantService.search(pageable, searchDTO));
     }
 
 
