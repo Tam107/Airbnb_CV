@@ -79,30 +79,47 @@ public class BookingService {
                 .map(bookingMapper::bookingToCheckAvailability).toList();
     }
 
+    // Retrieves booked listings for the authenticated user
     public List<BookedListingDTO> getBookedListing(){
+        // Get the currently authenticated user
         ReadUserDTO connectedUser = userService.getAuthenticatedUserFromSecurityContext();
 
+        // Fetch all bookings for the user by their public ID
         List<Booking> allBookings = bookingRepository.findAllByFkTenant(connectedUser.publicId());
+
+        // Extract listing IDs from bookings
         List<UUID> allListingPublicIDs = allBookings.stream()
                 .map(Booking::getFkListing)
                 .toList();
+
+        // Fetch listing details for the extracted listing IDs
         List<DisplayCardListingDTO> allListings = landlordService.getCardDisplayByListingPublicId(allListingPublicIDs);
+
+        // Map bookings and listings to DTOs
         return mapBookingToBookedListingDTO(allBookings, allListings);
     }
 
+    // Maps bookings and listings to BookedListingDTO objects
     private List<BookedListingDTO> mapBookingToBookedListingDTO(List<Booking> allBookings, List<DisplayCardListingDTO> allListings) {
         return allBookings.stream().map(booking -> {
+            // Find the matching listing for the booking
             DisplayCardListingDTO displayListingDTO = allListings.stream()
                     .filter(listing -> listing.publicId().equals(booking.getFkListing()))
                     .findFirst()
-                    .orElseThrow();
+                    .orElseThrow(); // Throws if no matching listing found
 
+            // Convert booking to date DTO
             BookedDateDTO dates = bookingMapper.bookingToCheckAvailability(booking);
-            return new BookedListingDTO(displayListingDTO.cover(),
-                    displayListingDTO.location(),
-                    dates, new PriceVO(booking.getTotalPrice()),
-                    booking.getPublicId(), displayListingDTO.publicId());
 
+            // Create and return a new BookedListingDTO with relevant details
+            return new BookedListingDTO(
+                    displayListingDTO.cover(),
+                    displayListingDTO.location(),
+                    dates,
+                    new PriceVO(booking.getTotalPrice()),
+                    booking.getPublicId(),
+                    displayListingDTO.publicId()
+            );
         }).toList();
     }
 
